@@ -3,7 +3,7 @@ mod dealer;
 mod file_io;
 mod hand_analyser;
 
-use card::{Card, CardNumber, Suit};
+use card::Card;
 use dealer::Dealer;
 use file_io::FileIO;
 use hand_analyser::HandAnalyser;
@@ -15,7 +15,7 @@ use std::error::Error;
 const DEFAULT_PLAYER_NUM: u32 = 8;
 const DEFAULT_NUM_THOUSAND_ITERATIONS: u32 = 1;
 const THOUSAND: u32 = 1000;
-const NUM_THREADS: usize = 10;
+const _NUM_THREADS: usize = 10;
 
 const NUM_STATS: usize = 2;
 const NUM_TOTAL_STATS: usize = 2;
@@ -92,7 +92,7 @@ fn simulate(num_players: u32, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>
 
     let analyser = HandAnalyser::new(community_cards, player_cards);
     let winning_hands = analyser.get_winning_hands();
-    for (hand, hand_type) in winning_hands {
+    for (hand, _hand_type) in winning_hands {
         match hand_stats.entry(hand) {
             std::collections::hash_map::Entry::Occupied(mut entry) => {
                 let counts = entry.get_mut();

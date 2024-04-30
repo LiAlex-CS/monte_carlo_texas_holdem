@@ -29,7 +29,7 @@ pub enum Hand {
 }
 
 impl Hand {
-    pub fn to_string(&self) -> String {
+    pub fn _to_string(&self) -> String {
         match self {
             Self::RoyalFlush(cards) => format!("Royal Flush: {:?}", Card::cards_to_string(cards)),
             Self::StraightFlush(cards) => {
