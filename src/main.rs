@@ -1,19 +1,21 @@
+mod args;
 mod card;
 mod dealer;
 mod file_io;
 mod hand_analyser;
+mod logger;
 
+use args::Args;
 use card::Card;
 use dealer::Dealer;
 use file_io::FileIO;
 use hand_analyser::HandAnalyser;
+use logger::Logger;
 
 use std::collections::HashMap;
-use std::env;
-use std::error::Error;
 
-const DEFAULT_PLAYER_NUM: u32 = 8;
-const DEFAULT_NUM_THOUSAND_ITERATIONS: u32 = 1;
+use clap::Parser;
+
 const THOUSAND: u32 = 1000;
 const _NUM_THREADS: usize = 10;
 
@@ -48,23 +50,16 @@ impl TotalStats {
     }
 }
 
-fn get_args() -> Result<(u32, u32), Box<dyn Error>> {
-    let args: Vec<_> = env::args().collect();
-    let num_players = args.get(1).map_or(Ok(DEFAULT_PLAYER_NUM), |a| a.parse())?;
-    let num_thousand_iterations = args
-        .get(2)
-        .map_or(Ok(DEFAULT_NUM_THOUSAND_ITERATIONS), |a| a.parse())?;
-
-    return Ok((num_players, num_thousand_iterations));
-}
-
-fn simulate(num_players: u32, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>) {
+fn simulate(num_players: u32, verbose: bool, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>) {
     let mut dealer = Dealer::new();
     let (community_cards, player_cards) = dealer.deal(num_players);
 
     let player_cards_strings = player_cards
         .iter()
-        .map(|cards| Card::cards_to_single_string(cards))
+        .map(|cards| match verbose {
+            true => Card::cards_to_single_string(cards),
+            false => Card::get_shorten_hand_string(cards),
+        })
         .collect::<Vec<String>>();
 
     for player_cards_string in player_cards_strings {
@@ -91,7 +86,7 @@ fn simulate(num_players: u32, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>
     // }
 
     let analyser = HandAnalyser::new(community_cards, player_cards);
-    let winning_hands = analyser.get_winning_hands();
+    let winning_hands = analyser.get_winning_hands(verbose);
     for (hand, _hand_type) in winning_hands {
         match hand_stats.entry(hand) {
             std::collections::hash_map::Entry::Occupied(mut entry) => {
@@ -109,26 +104,39 @@ fn simulate(num_players: u32, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>
 }
 
 fn main() {
-    let (num_players, num_thousand_iterations) = get_args().expect("Could not parse arguments.");
-    let file = FileIO::new(format!("./output_{}_players.csv", num_players));
+    let args = Args::parse();
+    let logger = Logger::new(args.debug);
+
+    let verbose_str = if args.verbose { "_verbose" } else { "" };
+
+    let file = FileIO::new(format!(
+        "./output_{}_players{}.csv",
+        args.num_players, verbose_str
+    ));
 
     let (mut hand_stats, mut total_stats) = file.read_from_file().expect("Error reading from file");
 
-    for _ in 0..num_thousand_iterations * THOUSAND {
-        simulate(num_players, &mut hand_stats)
+    for _ in 0..args.num_thousand_iterations * THOUSAND {
+        simulate(args.num_players, args.verbose, &mut hand_stats)
     }
 
-    total_stats[TotalStats::NumberOfIterations.get_index()] += num_thousand_iterations * THOUSAND;
+    total_stats[TotalStats::NumberOfIterations.get_index()] +=
+        args.num_thousand_iterations * THOUSAND;
     total_stats[TotalStats::NumberOfUniqueHands.get_index()] =
         hand_stats.keys().len().try_into().unwrap();
 
     file.clear_file().unwrap();
-    // println!("Number of unique hands: {}", &hand_stats.keys().len());
+
+    logger.print(format!(
+        "Number of unique hands: {}",
+        &hand_stats.keys().len()
+    ));
+
     file.write_to_file(format!("{}", FileIO::array_to_string(&total_stats)))
         .unwrap();
 
     for (hand, counts) in &hand_stats {
-        // println!("{}, {:?}", hand, counts);
+        logger.print(format!("{}, {:?}", hand, counts));
         file.write_to_file(format!("{},{}", hand, FileIO::array_to_string(counts)))
             .unwrap();
     }

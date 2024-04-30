@@ -106,6 +106,25 @@ impl CardNumber {
             Self::Ace => "Ace".to_string(),
         }
     }
+
+    pub fn to_short_string(&self) -> String {
+        match self {
+            Self::BottomAce => "A".to_string(),
+            Self::Two => "2".to_string(),
+            Self::Three => "3".to_string(),
+            Self::Four => "4".to_string(),
+            Self::Five => "5".to_string(),
+            Self::Six => "6".to_string(),
+            Self::Seven => "7".to_string(),
+            Self::Eight => "8".to_string(),
+            Self::Nine => "9".to_string(),
+            Self::Ten => "10".to_string(),
+            Self::Jack => "J".to_string(),
+            Self::Queen => "Q".to_string(),
+            Self::King => "K".to_string(),
+            Self::Ace => "A".to_string(),
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Hash, Clone)]
@@ -128,5 +147,23 @@ impl Card {
 
     pub fn cards_to_single_string(cards: &Vec<Card>) -> String {
         return Card::cards_to_string(cards).join(" | ");
+    }
+
+    pub fn get_shorten_hand_string(cards: &Vec<Card>) -> String {
+        let card_1 = &cards[0];
+        let card_2 = &cards[1];
+
+        let shorten_card_1_num = card_1.number.to_short_string();
+        let shorten_card_2_num = card_2.number.to_short_string();
+
+        let suited_str = match card_1.suit == card_2.suit {
+            true => "Suited",
+            false => "Off Suit",
+        };
+
+        return format!(
+            "{} | {} {}",
+            shorten_card_1_num, shorten_card_2_num, suited_str
+        );
     }
 }

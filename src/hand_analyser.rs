@@ -594,7 +594,7 @@ impl HandAnalyser {
         };
     }
 
-    pub fn get_winning_hands(&self) -> Vec<(String, Hand)> {
+    pub fn get_winning_hands(&self, verbose: bool) -> Vec<(String, Hand)> {
         let hands = self
             .card_combinations
             .iter()
@@ -630,10 +630,12 @@ impl HandAnalyser {
         let winning_player_hands = winning_hands
             .iter()
             .map(|(player_num, hand)| {
-                (
-                    Card::cards_to_single_string(&self.player_cards[*player_num]),
-                    hand.clone(),
-                )
+                let cards_string = if verbose {
+                    Card::cards_to_single_string(&self.player_cards[*player_num])
+                } else {
+                    Card::get_shorten_hand_string(&self.player_cards[*player_num])
+                };
+                (cards_string, hand.clone())
             })
             .collect::<Vec<(String, Hand)>>();
         return winning_player_hands;
