@@ -11,10 +11,17 @@ def plot_data(stats, total_stats, num_players):
     for hand in stats:
         hand_names.append(hand[0])
         win_rates.append(hand[1])
-    plt.barh(hand_names[::-1], win_rates[::-1])
+    reversed_hand_names = hand_names[::-1]
+    reversed_win_rates = win_rates[::-1]
+    plt.barh(reversed_hand_names, reversed_win_rates)
     plt.xlabel("Win Rate")
     plt.title(
         f"Win Rates for Each Hand with {num_players} Players After {iterations} Iterations. Total Hands: {num_hands}")
+
+    for i in range(len(reversed_win_rates)):
+        plt.text(reversed_win_rates[i], reversed_hand_names[i], str(
+            reversed_win_rates[i]))
+
     plt.show()
 
 
