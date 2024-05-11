@@ -614,19 +614,7 @@ impl HandAnalyser {
             .filter(|(_, hand)| hand.get_value() == strongest_hands_value)
             .collect::<Vec<(usize, Hand)>>();
 
-        // for (player_num, hand) in &strongest_hands {
-        //     println!("Player: {}, has a {}", player_num, hand.to_string());
-        // }
-        // println!("Winners:");
         let winning_hands = HandAnalyser::get_winning_hand_in_hand_type(&strongest_hands);
-        // for (player_num, hand) in &winning_hands {
-        //     println!("Player: {}, has a {}", player_num, hand.to_string());
-        //     println!(
-        //         "Player {} hand: {}",
-        //         player_num,
-        //         Card::cards_to_single_string(&self.player_cards[*player_num])
-        //     )
-        // }
         let winning_player_hands = winning_hands
             .iter()
             .map(|(player_num, hand)| {
