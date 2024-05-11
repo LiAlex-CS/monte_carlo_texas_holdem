@@ -18,7 +18,7 @@ use std::thread::spawn;
 use clap::Parser;
 
 const THOUSAND: u32 = 1000;
-const NUM_THREADS: usize = 5;
+const NUM_THREADS: usize = 10;
 
 const NUM_STATS: usize = 2;
 const NUM_TOTAL_STATS: usize = 2;

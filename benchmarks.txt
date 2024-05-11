@@ -25,6 +25,10 @@ Benchmark 1: cargo run 8 100 > error.log
 
 ## MULTITHREADING
 
+
+
+# 5 threads
+
 Benchmark 1: cargo run 8 100 > error.log
   Time (mean ± σ):      6.248 s ±  0.085 s    [User: 29.354 s, System: 0.058 s]
   Range (min … max):    6.118 s …  6.395 s    10 runs
@@ -32,3 +36,9 @@ Benchmark 1: cargo run 8 100 > error.log
 Benchmark 1: cargo run 8 100 > error.log
   Time (mean ± σ):      6.266 s ±  0.100 s    [User: 29.322 s, System: 0.058 s]
   Range (min … max):    6.153 s …  6.429 s    10 runs
+
+# 10 threads
+
+Benchmark 1: cargo run 8 100 > error.log
+  Time (mean ± σ):      5.474 s ±  0.318 s    [User: 36.721 s, System: 0.151 s]
+  Range (min … max):    5.227 s …  6.225 s    10 runs
