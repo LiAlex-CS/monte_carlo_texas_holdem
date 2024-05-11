@@ -50,6 +50,16 @@ impl TotalStats {
     }
 }
 
+// fn _get_combined_stats(
+//     all_stats: Vec<HashMap<String, [u32; NUM_STATS]>>,
+// ) -> HashMap<String, [u32; NUM_STATS]> {
+//     let mut combined_stats = HashMap::new();
+//     for record in all_stats {
+//         combined_stats.extend(record);
+//     }
+//     return combined_stats;
+// }
+
 fn simulate(num_players: u32, verbose: bool, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>) {
     let mut dealer = Dealer::new();
     let (community_cards, player_cards) = dealer.deal(num_players);
