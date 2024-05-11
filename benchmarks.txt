@@ -1,0 +1,34 @@
+## NO MULTITHREADING
+Benchmark 1: cargo run > error.log
+  Time (mean ± σ):     522.5 ms ± 195.8 ms    [User: 303.5 ms, System: 17.2 ms]
+  Range (min … max):   447.9 ms … 1077.1 ms    10 runs
+
+Benchmark 1: cargo run > error.log
+  Time (mean ± σ):     460.0 ms ±  34.9 ms    [User: 295.4 ms, System: 15.8 ms]
+  Range (min … max):   439.7 ms … 558.4 ms    10 runs
+
+Benchmark 1: cargo run 8 10 > error.log
+  Time (mean ± σ):      2.655 s ±  0.073 s    [User: 2.457 s, System: 0.020 s]
+  Range (min … max):    2.583 s …  2.821 s    10 runs
+
+Benchmark 1: cargo run 8 10 > error.log
+  Time (mean ± σ):      2.624 s ±  0.066 s    [User: 2.447 s, System: 0.018 s]
+  Range (min … max):    2.575 s …  2.804 s    10 runs
+
+Benchmark 1: cargo run 8 100 > error.log
+  Time (mean ± σ):     24.591 s ±  0.143 s    [User: 24.184 s, System: 0.046 s]
+  Range (min … max):   24.468 s … 24.924 s    10 runs
+
+Benchmark 1: cargo run 8 100 > error.log
+  Time (mean ± σ):     24.605 s ±  0.125 s    [User: 24.180 s, System: 0.046 s]
+  Range (min … max):   24.412 s … 24.771 s    10 runs
+
+## MULTITHREADING
+
+Benchmark 1: cargo run 8 100 > error.log
+  Time (mean ± σ):      6.248 s ±  0.085 s    [User: 29.354 s, System: 0.058 s]
+  Range (min … max):    6.118 s …  6.395 s    10 runs
+
+Benchmark 1: cargo run 8 100 > error.log
+  Time (mean ± σ):      6.266 s ±  0.100 s    [User: 29.322 s, System: 0.058 s]
+  Range (min … max):    6.153 s …  6.429 s    10 runs

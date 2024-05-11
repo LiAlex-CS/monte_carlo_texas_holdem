@@ -13,11 +13,12 @@ use hand_analyser::HandAnalyser;
 use logger::Logger;
 
 use std::collections::HashMap;
+use std::thread::spawn;
 
 use clap::Parser;
 
 const THOUSAND: u32 = 1000;
-const _NUM_THREADS: usize = 10;
+const NUM_THREADS: usize = 5;
 
 const NUM_STATS: usize = 2;
 const NUM_TOTAL_STATS: usize = 2;
@@ -50,15 +51,27 @@ impl TotalStats {
     }
 }
 
-// fn _get_combined_stats(
-//     all_stats: Vec<HashMap<String, [u32; NUM_STATS]>>,
-// ) -> HashMap<String, [u32; NUM_STATS]> {
-//     let mut combined_stats = HashMap::new();
-//     for record in all_stats {
-//         combined_stats.extend(record);
-//     }
-//     return combined_stats;
-// }
+fn get_combined_stats(
+    all_stats: Vec<HashMap<String, [u32; NUM_STATS]>>,
+) -> HashMap<String, [u32; NUM_STATS]> {
+    let mut combined_stats = HashMap::new();
+    for record in all_stats {
+        for (hand_key, counts) in record.into_iter() {
+            match combined_stats.entry(hand_key) {
+                std::collections::hash_map::Entry::Vacant(entry) => {
+                    entry.insert(counts);
+                }
+                std::collections::hash_map::Entry::Occupied(mut entry) => {
+                    let new_counts = entry.get_mut();
+                    for i in 0..NUM_STATS {
+                        new_counts[i] += counts[i];
+                    }
+                }
+            }
+        }
+    }
+    return combined_stats;
+}
 
 fn simulate(num_players: u32, verbose: bool, hand_stats: &mut HashMap<String, [u32; NUM_STATS]>) {
     let mut dealer = Dealer::new();
@@ -87,14 +100,6 @@ fn simulate(num_players: u32, verbose: bool, hand_stats: &mut HashMap<String, [u
         }
     }
 
-    // println!("Community Cards:");
-    // println!("    {:?}", Card::cards_to_string(&community_cards));
-    // println!("Player Cards:");
-    // for (index, player_hand) in player_cards.iter().enumerate() {
-    //     println!("    player {}:", { index });
-    //     println!("        hand: {:?}", Card::cards_to_string(player_hand))
-    // }
-
     let analyser = HandAnalyser::new(community_cards, player_cards);
     let winning_hands = analyser.get_winning_hands(verbose);
     for (hand, _hand_type) in winning_hands {
@@ -116,6 +121,7 @@ fn simulate(num_players: u32, verbose: bool, hand_stats: &mut HashMap<String, [u
 fn main() {
     let args = Args::parse();
     let logger = Logger::new(args.debug);
+    let mut threads = vec![];
 
     let verbose_str = if args.verbose { "_verbose" } else { "" };
 
@@ -124,11 +130,28 @@ fn main() {
         args.num_players, verbose_str
     ));
 
-    let (mut hand_stats, mut total_stats) = file.read_from_file().expect("Error reading from file");
-
-    for _ in 0..args.num_thousand_iterations * THOUSAND {
-        simulate(args.num_players, args.verbose, &mut hand_stats)
+    let (read_stats, mut total_stats) = file.read_from_file().expect("Error reading from file");
+    for _ in 0..NUM_THREADS {
+        let thread = spawn(move || {
+            let mut stats: HashMap<String, [u32; NUM_STATS]> = HashMap::new();
+            for _ in
+                0..args.num_thousand_iterations * (THOUSAND / u32::try_from(NUM_THREADS).unwrap())
+            {
+                simulate(args.num_players, args.verbose, &mut stats)
+            }
+            return stats;
+        });
+        threads.push(thread)
     }
+
+    let mut all_stats = threads
+        .into_iter()
+        .map(|thread| thread.join().unwrap())
+        .collect::<Vec<HashMap<String, [u32; NUM_STATS]>>>();
+
+    all_stats.push(read_stats);
+
+    let hand_stats = get_combined_stats(all_stats);
 
     total_stats[TotalStats::NumberOfIterations.get_index()] +=
         args.num_thousand_iterations * THOUSAND;
@@ -150,29 +173,4 @@ fn main() {
         file.write_to_file(format!("{},{}", hand, FileIO::array_to_string(counts)))
             .unwrap();
     }
-
-    // let mut community_cards = vec![];
-    // for i in 2..=5 {
-    //     community_cards.push(Card {
-    //         number: CardNumber::match_int_with_card_num(i),
-    //         suit: Suit::Clubs,
-    //     });
-    // }
-    // community_cards.push(Card {
-    //     number: CardNumber::match_int_with_card_num(10),
-    //     suit: Suit::Spades,
-    // });
-    // let player_cards = vec![vec![
-    //     Card {
-    //         number: CardNumber::match_int_with_card_num(2),
-    //         suit: Suit::Hearts,
-    //     },
-    //     Card {
-    //         number: CardNumber::match_int_with_card_num(8),
-    //         suit: Suit::Diamonds,
-    //     },
-    // ]];
-
-    // let analyser = HandAnalyser::new(community_cards, player_cards);
-    // analyser.get_winning_hand();
 }
